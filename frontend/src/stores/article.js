@@ -39,11 +39,12 @@ export const useArticleStore = defineStore("article", () => {
    * @param {number|string} articleId - Article ID
    */
   async function fetchArticleById(articleId) {
-    console.log("Fetching article by ID:", articleId);
-    if (!articleId) {
-      error.value = "Article ID is missing";
-      loading.value = false;
-      return null;
+    const article = articles.value.find((a) => a.id == articleId);
+
+    if (article) {
+      console.log("found article in store:", article);
+      currentArticle.value = article;
+      return article;
     }
 
     loading.value = true;
@@ -90,7 +91,7 @@ export const useArticleStore = defineStore("article", () => {
         err.response?.data?.message ||
         err.message ||
         "Failed to update article. Please try again.";
-        throw err;
+      throw err;
     } finally {
       loading.value = false;
     }
