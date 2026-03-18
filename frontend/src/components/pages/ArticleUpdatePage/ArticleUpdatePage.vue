@@ -44,12 +44,25 @@
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
+import { useQuery } from '@tanstack/vue-query'
+import axios from '../../../utils/axios.js'
 import Header from "../../organisms/Header/Header.vue";
 import Footer from "../../organisms/Footer/Footer.vue";
 import ArticleForm from "../../organisms/ArticleForm/ArticleForm.vue";
-import { useArticle } from "../../../queries/article.js";
 
 const route = useRoute();
 const router = useRouter();
-const { data: article, isLoading, isError, error } = useArticle(route.params.id);
+
+const articleId = route.params.id;
+const { data: article, isLoading, isError, error } = useQuery({
+  queryKey: `article-${articleId}`,
+  queryFn: async () => {
+    if (!articleId) {
+      throw new Error('Article ID is missing')
+    }
+    const response = await axios.get(`/articles/${articleId}`)
+    return response.data
+  },
+  enabled: !!articleId,
+})
 </script>

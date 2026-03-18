@@ -34,8 +34,15 @@
 </template>
 
 <script setup>
+import { useQuery } from '@tanstack/vue-query'
+import axios from '../../../utils/axios.js'
 import ArticleArchive from "../../templates/ArticleArchive/ArticleArchive.vue";
-import { useArticles } from "../../../queries/article.js";
 
-const { data: articles, isLoading, isError, error } = useArticles();
+const { data: articles, isLoading, isError, error } = useQuery({
+  queryKey: 'articles',
+  queryFn: async () => {
+    const response = await axios.get('/articles')
+    return response.data
+  },
+})
 </script>

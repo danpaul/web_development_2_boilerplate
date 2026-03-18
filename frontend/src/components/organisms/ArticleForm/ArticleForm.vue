@@ -148,11 +148,9 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import axios from "../../../utils/axios.js";
 import Heading from "../../atoms/Heading/Heading.vue";
-import {
-  useCreateArticle,
-  useUpdateArticle,
-} from "../../../queries/article.js";
 
 const props = defineProps({
   article: {
@@ -166,8 +164,32 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const createArticleMutation = useCreateArticle();
-const updateArticleMutation = useUpdateArticle();
+const queryClient = useQueryClient();
+
+const createArticleMutation = useMutation({
+  mutationFn: async (article) => {
+    const response = await axios.post("/articles", article);
+    return response.data;
+  },
+  onSuccess: () => {
+    // Invalidate and refetch articles list
+    queryClient.invalidateQueries({ queryKey: "articles" });
+  },
+});
+
+const updateArticleMutation = useMutation({
+  mutationFn: async (article) => {
+    const articleId = article.id;
+    const response = await axios.put(`/articles/${articleId}`, article);
+    return response.data;
+  },
+  onSuccess: (data, variables) => {
+    const articleId = variables.id;
+    // Invalidate and refetch articles list and the specific article
+    queryClient.invalidateQueries({ queryKey: "articles" });
+    queryClient.invalidateQueries({ queryKey: `article-${articleId}` });
+  },
+});
 
 const id = ref(props.article?.id);
 const title = ref(props.article?.title ?? "");
